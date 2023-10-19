@@ -1,17 +1,15 @@
 import { Route, Routes, useNavigate } from "react-router-dom";
-import Auth from "./components/Auth/Auth";
 import RootLayout from "./components/RootLayout/RootLayout";
 import Home from "./pages/Home/Home";
 import { useQuery } from "react-query";
 import { instance } from "./api/config/instance";
-import { loginRecoilState } from "./store/atoms/AuthAtoms";
-import { useRecoilState } from "recoil";
+import AuthRoute from "./components/Routes/AuthRoute";
+import AccountRoute from "./components/Routes/AccountRoute";
 
 function App() {
 
-  const navigate = useNavigate();
-
-  const getPrincipal = useQuery("getPrincipal", async () => { // 첫번째는 key값, 두번째는 비동기 처리
+  // useQuery는 get요청
+  const getPrincipal = useQuery(["getPrincipal"], async () => { // 첫번째는 key값, 두번째는 비동기 처리 , ["getPrincipal(키값)", (dependency)]
     try{
       const option = {
         headers: {
@@ -19,34 +17,29 @@ function App() {
         }
       }
       return await instance.get("/account/principal", option); // /account 시작되어서 filter가 동작되어야 한다.
+      // getprincipal 안에 응답데이터를 받아온다.
 
     } catch (error){
         throw new Error(error);
     }
     }, {
-      retry: 0,
-      refetchInterval: 1000 * 60 * 10, // 10분 마다 다시 요청을 날림
-      refetchOnWindowFocus: false,
-
-      // onSuccess: (response) => { // 정상적이면 success
-      //   if(!response.data.enabled) { // 이메일 인증이 되지 않음
-
-      //   }
-      // },
-      // onError: (error) => { // 정상적이지 않으면 error
-      //   console.log(error);
-      // }
+      retry: 0, // 요청실패 했을때 다시 요청 몇번 날릴것인가
+      refetchInterval: 1000 * 60 * 10, // 10분 마다 다시 요청을 날림 -> await instance.get("/account/principal", option)
+      refetchOnWindowFocus: false // 맨처음 렌더링 될때 요청 날림
       
     }); 
 
-  
+  if(getPrincipal.isLoading) {
+    return <></>
+  }
 
   return (
     <>
     <RootLayout>
       <Routes>
         <Route path="/" element={ <Home/> }/>
-        <Route path="/auth/*" element={ <Auth/> }/>          {/*  auth/* 서브 라우터  */}
+        <Route path="/auth/*" element={ <AuthRoute/> }/>     {/*  auth/* 서브 라우터  */}
+        <Route path="/account/*" element={ <AccountRoute/> }/>
         <Route path="/board/:category" element={<></>}/>
         <Route path="/board/:category/register" element={<></>}/>
         <Route path="/board/:category/edit" element={<></>}/>

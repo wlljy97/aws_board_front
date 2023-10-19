@@ -12,7 +12,8 @@ const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <QueryClientProvider client={queryClient}>
+  // 쿼리클라이언트 객체 안에 포함
+  <QueryClientProvider client={queryClient}> 
     <RecoilRoot>
       <BrowserRouter>
         <App />

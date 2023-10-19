@@ -16,12 +16,12 @@ const mainContainer = css`
     padding: 20px;
 `;
 
-function RootContainer({ childern }) {
+function RootContainer({ children }) {
     return (
         <div css={rootContainer}>
             <Sidebar />
             <div css={mainContainer}>
-                {childern}
+                {children}
             </div>
         </div>
     );
