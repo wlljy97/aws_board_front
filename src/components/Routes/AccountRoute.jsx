@@ -2,6 +2,7 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import MyPage from '../../pages/Mypage/MyPage';
+import EditPassword from '../../pages/EditPassword/EditPassword';
 
 function AccountRoute(props) {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ function AccountRoute(props) {
         // 서브 라우터 singin, signup을 컨트롤
         <Routes>
             <Route path="mypage" element={ <MyPage/> }/>
-            <Route path="password" element={ <></> }/>
+            <Route path="password" element={ <EditPassword/> }/>
         </Routes>
     );
 }
