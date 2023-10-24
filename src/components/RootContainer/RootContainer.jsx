@@ -13,7 +13,7 @@ const mainContainer = css`
     flex-grow: 1;
     border: 1px solid #dbdbdb;
     border-radius: 10px;
-    padding: 20px;
+    padding: 20px 20px 70px;
 `;
 
 function RootContainer({ children }) {
