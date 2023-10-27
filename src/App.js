@@ -8,6 +8,7 @@ import AccountRoute from "./components/Routes/AccountRoute";
 import BoardWrite from "./pages/BoardWrite/BoardWrite";
 import BoardList from "./pages/BoardList/BoardList";
 import BoardDetails from "./pages/BoardDetails/BoardDetails";
+import Store from "./pages/Store/PointStore";
 
 function App() {
 
@@ -46,7 +47,8 @@ function App() {
         <Route path="/board/write" element={ <BoardWrite/> }/>
         <Route path="/board/:category/:page" element={ <BoardList/> }/>
         <Route path="/board/:boardId" element={ <BoardDetails/> }/>
-        <Route path="/board/:category/edit" element={<></>}/>
+        <Route path="/store/products" element={ <Store />} />
+
       </Routes>
     </RootLayout>
     </>
