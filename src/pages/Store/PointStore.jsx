@@ -3,6 +3,7 @@ import RootContainer from '../../components/RootContainer/RootContainer';
 import { css } from '@emotion/react';
 import { useQuery, useQueryClient } from 'react-query';
 import { instance } from '../../api/config/instance';
+import { useNavigate } from 'react-router-dom';
 /** @jsxImportSource @emotion/react */
 
 const SStoreContainer = css`
@@ -24,6 +25,7 @@ const SProductContainer = css`
 `;
 
 function PointStore(props) {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const getProducts = useQuery(["getProducts"], async () => {
@@ -80,7 +82,8 @@ function PointStore(props) {
             } 
             instance.post("/order", orderDate, option).then(response => {
                 alert("포인트 충전이 완료되었습니다.");
-                // queryClient.refetchQueries([""]);
+                queryClient.refetchQueries(["getPrincipal"]);
+                navigate("/account/mypage")
             })
         } else {
                 alert(error_msg);

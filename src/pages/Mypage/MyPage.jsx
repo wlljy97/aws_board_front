@@ -155,7 +155,7 @@ function MyPage(props) {
                         }
                     </div>
                     <div>
-                        <h3>누적포인트: 0원</h3>
+                        <h3>누적포인트: {principal.userPoint} Point</h3>
                         <button onClick={() => {navigate("/store/products")}}>포인트 구매</button>
                     </div>
                 </div>

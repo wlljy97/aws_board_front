@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import RootContainer from '../../components/RootContainer/RootContainer';
 import { useQuery, useQueryClient } from 'react-query';
 import { instance } from '../../api/config/instance';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { css } from '@emotion/react';
 /** @jsxImportSource @emotion/react */
 
@@ -56,6 +56,7 @@ const SLikeButton = (isLike) => css`
 
 function BoardDetails(props) {
 
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const principal = queryClient.getQueryState("getPrincipal");
 
@@ -64,9 +65,10 @@ function BoardDetails(props) {
 
     const getBoard = useQuery(["getBoard"], async () => {
         try{
-            return await instance.get(`/board/${boardId}`)
+            return await instance.get(`/board/${boardId}`);
         }catch(error){
-
+            alert("해당 게시글을 불러올 수 없습니다.");
+            navigate("/board/all/1");
         }
     }, {
         refetchOnWindowFocus: false,
@@ -104,10 +106,26 @@ function BoardDetails(props) {
                 await instance.post(`/board/like/${boardId}`, {}, option);
             }
             getLikeState.refetch();
+            getBoard.refetch();
         }catch (error){
             console.log(error)
         }
         
+    }
+
+    const handleDeleteBoard = async () => {
+        if(!window.confirm("해당 게시글을 정말로 삭제하시겠습니까?")) {
+            return;
+
+        }
+        try { 
+            await instance.delete(`/board/${boardId}`); // 해당 boardId를 삭제를 시킴
+            alert("게시글 삭제 완료");
+            navigate("/board/all/1")
+            // navigate(-1); // navigate에 (-1)을 주면 뒤로가기
+        } catch(error) {
+
+        }
     }
 
     if(getBoard.isLoading) {
@@ -119,10 +137,11 @@ function BoardDetails(props) {
             <div css={boardContainer}>
                 <div css={SSideOption}>
                     {!getLikeState.isLoading && 
-                        <button disabled={!principal?.data?.data} css={SLikeButton(getLikeState?.data?.data)}
+                        <button disabled={!principal?.data?.data} 
+                        css={SLikeButton(getLikeState?.data?.data)}
                         onClick={handleLikeButtonClick}>
                             <div>❤️</div>
-                            <div>10</div>
+                            <div>{getBoard?.data?.data?.boardLikeCount}</div> 
                         </button>
                     }
                 </div>
@@ -130,6 +149,12 @@ function BoardDetails(props) {
                 <p><b>{board.nickname}</b> - {board.createDate}</p>
                 <div css={line}></div>
                 <div css={contentContainer} dangerouslySetInnerHTML={{ __html: board.boardContent }}></div>
+                {principal?.data?.data?.email === getBoard?.data?.data?.email && 
+                    <div>
+                        <button onClick={() => {navigate(`/board/edit/${boardId}`)}}>수정</button>
+                        <button onClick={handleDeleteBoard}>삭제</button>
+                    </div>
+                }    
             </div>
         </RootContainer>
     );

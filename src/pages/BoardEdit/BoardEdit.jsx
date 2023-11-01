@@ -4,8 +4,8 @@ import ReactQuill from 'react-quill';
 import Select from 'react-select';
 import { instance } from '../../api/config/instance';
 import { css } from '@emotion/react';
-import { useQueryClient } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 /** @jsxImportSource @emotion/react */
 
 const buttonContainer = css`
@@ -33,23 +33,46 @@ const titleInput = css`
 `;
 
 
-function BoardWrite(props) {
+function BoardEdit(props) {
 
+    const { boardId } = useParams();
     const navigate = useNavigate();
 
-    const [ boardContent, setBoardContent ] = useState({
+    const [ boardContent, setBoardContent ] = useState({ // board에 셋팅을 해줘야 여기에 있는 data들이 들어온다.
         title: "",
         content: "",
-        categoryId: "",
+        categoryId: 0,
         categoryName: ""
     });
 
     const [ categories, setCategories ] = useState([]);
     const [ newCategory, setNewCategory ] = useState("");
     const [ selectOptions, setSelectOptions ] = useState([]);
-    const [ selectedOption, setSelectedOption ] = useState(selectOptions[0]);
+    const [ selectedOption, setSelectedOption ] = useState(selectOptions[0]); // selectedOption이 들어와야 categoryName이 들어온다.
 
     const queryClient = useQueryClient();
+
+    const getBoard = useQuery(["getBoard"], async () => {
+        try{
+            return await instance.get(`/board/${boardId}`)
+        }catch(error){
+            alert("해당 게시글을 불러올 수 없습니다.")
+            navigate("/board/all/1")
+        }
+    }, {
+        refetchOnWindowFocus: false,
+        onSuccess: response => {
+            setBoardContent({
+                ...boardContent,
+                title: response.data.boardTitle,
+                content: response.data.boardContent
+            })
+
+            const category = selectOptions.filter(option => option.value === response.data.boardCategoryId)[0];
+            setSelectedOption(category);
+        },
+        enabled: selectOptions.length > 0 // enabled가 false이면 어떠한 경우에서도 요청을 날리지 않음, true이면 요청을 날림
+    })
 
     // 로그인과 인증 되지 않았을 때
     useEffect(() => {
@@ -72,7 +95,7 @@ function BoardWrite(props) {
     useEffect(() => {
         instance.get("/board/categories") 
         .then((response) => {
-            setSelectOptions(response.date);
+            setCategories(response.date);
             setSelectOptions(
                 response.data.map(
                     category => {
@@ -103,7 +126,7 @@ function BoardWrite(props) {
             categoryId: selectedOption?.value, // value에다가 id 값을 넣어준다.
             categoryName: selectedOption?.label //  label 에다가 name 값을 넣어준다.
         });
-    }, [selectedOption])
+    }, [selectedOption]);
 
     const modules = {
         toolbar: {
@@ -141,21 +164,21 @@ function BoardWrite(props) {
         setNewCategory(categoryName)
     }
 
-    const handleWriteSubmit = async () => {
+    const handleEditSubmit = async () => {
         try {
             const option = {
                 headers: {
                     Authorization: localStorage.getItem("accessToken")
                 }
             }
-            await instance.post("/board/content", boardContent, option);
-            alert("게시글 작성 완료")
-            navigate("/board/${boardId}")
+            await instance.put(`/board/${boardId}`, boardContent, option);
+            alert("게시글 수정 완료");
+            navigate(`/board/${boardId}`);
         } catch(error) {
             console.error(error);
-            
+            alert("게시글 수정 오류");
+            navigate(`/board/${boardId}`);
         }
-        
     }
 
     return (
@@ -173,20 +196,20 @@ function BoardWrite(props) {
                     </div>
                     <button onClick={handleCategoryAdd}>카테고리 추가</button>
                 </div>
-                <div><input css={titleInput} type="text" name="title" placeholder='제목' onChange={handleTitleInput}/></div>
+                <div><input css={titleInput} type="text" name="title" placeholder='제목' onChange={handleTitleInput} value={boardContent.title}/></div>
                 <div>
                     <ReactQuill 
                         style={{width: "928px", height: "500px"}} 
                         modules={modules} 
-                        onChange={handleContentInput}/>
+                        value={boardContent.content}
+                        onChange={handleContentInput} />
                 </div>
                 <div css={buttonContainer}>
-                    <button onClick={handleWriteSubmit}>작성하기</button>
-                    
+                    <button onClick={handleEditSubmit}>수정하기</button>
                 </div>
             </div>
         </RootContainer>
     );
 }
 
-export default BoardWrite;
+export default BoardEdit;
